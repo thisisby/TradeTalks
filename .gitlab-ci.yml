@@ -1,0 +1,44 @@
+# stages:
+#   - build
+#   - deploy
+
+# build:
+#   stage: build
+#   tags:
+#     - dind
+#   image: docker:20.10.16
+#   services:
+#     - docker:20.10.16-dind
+#   variables:
+#     DOCKER_TLS_CERTDIR: "/certs"
+#   before_script:
+#     - docker login -u $CI_REGISTRY_USER
+#       -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+#   script:
+#     - docker pull $CI_REGISTRY_IMAGE:latest || true
+#     - docker build --cache-from $CI_REGISTRY_IMAGE:latest
+#       --tag $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
+#       --tag $CI_REGISTRY_IMAGE:latest .
+#     - docker push $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
+#     - docker push $CI_REGISTRY_IMAGE:latest
+#   rules:
+#     - if: '$CI_COMMIT_BRANCH == "main"'
+
+# deploy:
+#   stage: deploy
+#   tags:
+#     - shell
+#   before_script:
+#     - eval $(ssh-agent -s)
+#     - ssh-add <(echo "$SSH_PRIVATE_KEY")
+#   script:
+#     - ssh -o StrictHostKeyChecking=no -T allin@92.38.48.11
+#     - echo "connection established"
+#     - sudo docker login -u ${CI_REGISTRY_USER} -p ${CI_REGISTRY_PASSWORD} ${CI_REGISTRY}
+#     - sudo docker ps
+#     - sudo docker-compose -f docker-compose.yaml stop api
+#     - sudo docker-compose -f docker-compose.yaml rm api
+#     - sudo docker pull ${CI_REGISTRY_IMAGE}:latest
+#     - sudo docker-compose -f docker-compose.yaml up -d
+#   rules:
+#     - if: '$CI_COMMIT_BRANCH == "main"'

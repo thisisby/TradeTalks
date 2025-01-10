@@ -1,0 +1,32 @@
+version: '3.7'
+services:
+  redis:
+    image: redis:latest
+    container_name: redis
+    restart: always
+    ports:
+      - '6379:6379'
+
+  api:
+    container_name: api
+    build:
+      context: .
+      dockerfile: Dockerfile
+    env_file:
+      - .env.docker
+    deploy:
+      mode: replicated
+      replicas: 1
+    restart: always
+    network_mode: "host"
+    depends_on:
+      - redis
+    volumes:
+      - .:/usr/src/app
+      - /usr/src/app/node_modules
+
+volumes:
+  my-datavolume:
+  config:
+  data:
+  log:
